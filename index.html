@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Snake</title>
 <style>
+  :root { --accent: hsl(210, 70%, 58%); --accent-light: hsl(210, 80%, 73%); }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     min-height: 100vh;
@@ -17,7 +18,7 @@
     font-family: "Segoe UI", system-ui, sans-serif;
     user-select: none;
   }
-  h1 { font-size: 2rem; letter-spacing: 0.3em; margin-bottom: 0.5rem; color: #4ade80; }
+  h1 { font-size: 2rem; letter-spacing: 0.3em; margin-bottom: 0.5rem; color: var(--accent); }
   .hud {
     display: flex; gap: 2rem; margin-bottom: 0.75rem;
     font-size: 1.1rem; font-variant-numeric: tabular-nums;
@@ -40,15 +41,15 @@
     text-align: center; gap: 0.75rem;
   }
   .overlay.hidden { display: none; }
-  .overlay h2 { font-size: 2rem; color: #4ade80; }
+  .overlay h2 { font-size: 2rem; color: var(--accent); }
   .overlay p { color: #94a3b8; }
   .overlay button {
     margin-top: 0.5rem; padding: 0.6rem 1.8rem;
     font-size: 1rem; font-weight: 600;
-    background: #4ade80; color: #0f172a;
+    background: var(--accent); color: #0f172a;
     border: none; border-radius: 6px; cursor: pointer;
   }
-  .overlay button:hover { background: #86efac; }
+  .overlay button:hover { background: var(--accent-light); }
   .controls { margin-top: 0.75rem; color: #64748b; font-size: 0.9rem; }
   select {
     background: #1e293b; color: #e2e8f0;
@@ -66,6 +67,16 @@
         <option value="140">Slow</option>
         <option value="100" selected>Normal</option>
         <option value="65">Fast</option>
+      </select>
+    </span>
+    <span>Color:
+      <select id="color">
+        <option value="210">Blue</option>
+        <option value="142">Green</option>
+        <option value="270">Purple</option>
+        <option value="28">Orange</option>
+        <option value="330">Pink</option>
+        <option value="48">Gold</option>
       </select>
     </span>
   </div>
@@ -89,6 +100,7 @@
   const scoreEl = document.getElementById("score");
   const bestEl = document.getElementById("best");
   const speedEl = document.getElementById("speed");
+  const colorEl = document.getElementById("color");
   const overlay = document.getElementById("overlay");
   const ovTitle = document.getElementById("ovTitle");
   const ovText = document.getElementById("ovText");
@@ -98,6 +110,14 @@
 
   best = Number(localStorage.getItem("snakeBest") || 0);
   bestEl.textContent = best;
+
+  let hue = Number(localStorage.getItem("snakeHue") || 210);
+
+  function applyColor() {
+    colorEl.value = hue;
+    document.documentElement.style.setProperty("--accent", `hsl(${hue}, 70%, 58%)`);
+    document.documentElement.style.setProperty("--accent-light", `hsl(${hue}, 80%, 73%)`);
+  }
 
   function reset() {
     const mid = Math.floor(GRID / 2);
@@ -216,7 +236,7 @@
     snake.forEach((s, i) => {
       const t = i / Math.max(snake.length - 1, 1);
       const light = 60 - t * 25;
-      ctx.fillStyle = i === 0 ? "#86efac" : `hsl(142, 70%, ${light}%)`;
+      ctx.fillStyle = i === 0 ? `hsl(${hue}, 80%, 73%)` : `hsl(${hue}, 70%, ${light}%)`;
       roundRect(s.x * CELL + 1, s.y * CELL + 1, CELL - 2, CELL - 2, 5);
     });
 
@@ -285,7 +305,16 @@
     }
   });
 
+  colorEl.addEventListener("change", () => {
+    colorEl.blur();
+    hue = Number(colorEl.value);
+    localStorage.setItem("snakeHue", hue);
+    applyColor();
+    draw();
+  });
+
   state = "idle";
+  applyColor();
   reset();
   draw();
 })();
